@@ -1,0 +1,53 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Neem Leaf Disease Classifier</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+</head>
+<body class="bg-green-50 flex items-center justify-center min-h-screen">
+    <div class="bg-white p-8 rounded-lg shadow-lg w-full max-w-md">
+        <h1 class="text-3xl font-bold mb-6 text-center text-green-700">Neem Leaf Disease Classifier</h1>
+        <p class="text-center text-gray-600 mb-4">Upload a neem leaf image to diagnose potential diseases.</p>
+        <input type="file" id="imageInput" accept="image/*" class="mb-4 w-full p-2 border rounded">
+        <button id="predictButton" class="w-full bg-green-500 text-white p-2 rounded hover:bg-green-600">Predict</button>
+        <div id="result" class="mt-4 text-center"></div>
+    </div>
+
+    <script>
+        document.getElementById('predictButton').addEventListener('click', async () => {
+            const imageInput = document.getElementById('imageInput');
+            const resultDiv = document.getElementById('result');
+            
+            if (!imageInput.files[0]) {
+                resultDiv.innerHTML = '<p class="text-red-500">Please select an image.</p>';
+                return;
+            }
+
+            const formData = new FormData();
+            formData.append('image', imageInput.files[0]);
+
+            try {
+                resultDiv.innerHTML = '<p class="text-gray-500">Predicting...</p>';
+                const response = await fetch('http://127.0.0.1:5002/predict', {
+                    method: 'POST',
+                    body: formData
+                });
+
+                const data = await response.json();
+                if (data.error) {
+                    resultDiv.innerHTML = `<p class="text-red-500">Error: ${data.error}</p>`;
+                } else {
+                    resultDiv.innerHTML = `
+                        <p><strong>Predicted Class:</strong> ${data.predicted_class}</p>
+                        <p><strong>Confidence:</strong> ${data.confidence.toFixed(2)}%</p>
+                    `;
+                }
+            } catch (error) {
+                resultDiv.innerHTML = '<p class="text-red-500">Failed to connect to the backend. Is it running?</p>';
+            }
+        });
+    </script>
+</body>
+</html>
